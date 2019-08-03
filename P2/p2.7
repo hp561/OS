@@ -1,0 +1,108 @@
+.TH P1 "March 2019" Memory Management "Project 2"
+.SH NAME
+Harsh Patel
+.SH SYNOPSIS
+The purpose of this project was to simulate how memory is managed my the computer. We had to simulate the role of a memory management unit.
+.SH DESCRIPTION
+.B public MemoryManager(unsigned wordSize, std::function<int(int, void *)> allocator)
+
+This function simply creates the constructor for the memory object and sets the word size and what allocation method the user wants to use.
+
+.B public ~MemoryManager()
+
+In my destructor I removed all memory that I created to make sure there weren't any memory leaks.
+
+.B public int dumpMemoryMap(char *filename)
+
+For this method, I first used getList to get the stream of holes and their lengths and converted the hole offset/length values into strings then merged all converted ints with the proper format into one big string and then converted that to a cstring to be written by the POSIX call, which i learned how to do via stockoverflow.
+
+.B public void initialize(size_t sizeInWords)
+
+In this method I had a class variable called mem and initialized it with a size of whatever the user demanded in words * the wordSize to get the proper number of bytes..
+
+.B public void shutdown()
+
+In this method i deleted the mem array I initialized from memory to clear everything, and I deleted my vector that kept track of the holes and allocation of words in the mem array
+
+.B public void *allocate(size_t sizeInBytes)
+
+For this function, I found the offset by calling the allocate function then I multiplied that word offset by the sizeInBytes to get the location of the offset in the mem block. I created a temp* and set it equal to mem then incremented the pointer by the byteOffset to returned that memory address. After that I traversed my vector that kept track of all the words being used and went to the proper offset, which i calculated, and stored '1s' until i reached the correct amount of words (offset+sizeInBytes/getWordSize()). I also stored the address of the temp variable and it's offset in a vector pair to be used by the free function so it can easily traverse the vector and find the proper address to be deleted. All of this is required to know where to store the process in memory and how to track it.
+
+.B public void setAllocator(std::function<int(int, void *)> allocator)
+
+Just switched the allocator class variable with "this->" so the user can change the method of allocation.
+
+.B public void *getList()
+
+I traversed my vector that contained the used and free spaces to figure out the length of each whole and offset and returned the array that store the information.
+
+.B public void *getBitmap()
+
+I traversed my vector that contained the used (1s) and free (0s) spaces and combined it with the length of words /8 to a uint16_t array and returned that.
+
+.B public unsigned getWordSize()
+
+Just returns the wordSize.
+
+.B public void *getMemoryStart()
+
+Return the address of mem (memory block).
+
+.B public unsigned getMemoryLimit()
+
+I had a variable that stored the sizeInBytes*wordSize in initialize method and i returned that as the memory limit
+
+.B public int bestFit(int sizeInWords, void *list)
+
+I traversed my list and compared each hole to the words being allocated. I returned the offset with the smallest size available for the words.
+
+.B public int worstFit(int sizeInWords, void *list)
+
+I traversed my list and compared each hole to the words being allocated. I returned the offset with the largest size available for the words.
+
+.B public void free(void *address)
+
+I traverse my vector pair that contained the address and offset I stored from allocate and compared it with the address being passed in. If they match i cleared that from vector pair, then I also made freed (0'ed) my vector that contained 1s and 0s of the simulated memory from the offset.
+
+.B initMemoryManager
+
+I created a global memory object variable and called my initialize method.
+
+.B getFreeSize
+
+I called my getList method and added up all the lengths of the holes and returned that.
+
+.B getUseSize
+
+I called my getList method and added up all the lengths of the holes and returned total words - that.
+
+.B allocateMemory
+
+I called my allocate function and converted the address that it returned to a string and returned it.
+
+.B freeMemory
+
+Just called my free function to delete memory block.
+
+.B shutdown
+
+Called my shutdown method.
+
+.B deleteMemoryManager
+
+Deleted my memory object.
+
+.B setAlgorithm
+
+If user parameter is 1 then I call setAllocator to bestFit. If 2 it is worstFit
+
+.SH Testing
+For testing my memory management unit, I created my own tests which are commented out in my MemoryManager.cpp file and used the tests that you guys provided. I also used valgrind to test for memory leaks and there were none. Everything passed.
+.SH BUGS
+Sometimes the number that showed the free and use blocks wouldn't show correctly. Which is weird. I couldn't figure it out.
+.SH Link
+https://www.youtube.com/watch?v=PjTEUrd7FMc&feature=youtu.be
+.SH REFERENCES
+https://stackoverflow.com/questions/46116764/how-to-use-the-write-system-call-in-c
+.SH AUTHOR
+Harsh Patel

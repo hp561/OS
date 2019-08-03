@@ -1,0 +1,9 @@
+To do this assignment, I used the grep, mv, and tar commands to do steps 1 through 7.
+In step 1, I invoked the following command: mkdir patel_harsh in home/reptilian to create a folder using my
+first and  last name. In step 2 I did grep -irl “android_dev” to find files that contained android_dev from
+the kernel source directory. I used the i flag to ignore case, r to search recursively, and l to list the files
+with the given string. Then in step 3, I did grep -irl “android_dev” > ex1.txt to pipe the output of the
+command to a txt file named ex1. In step 5, I moved the file using mv ex1.txt /home/reptilian/patel_harsh. Then I used
+tar -zcvf ex1.tar.gz /home/reptilian/patel_harsh to create the ex1.tar.gz file of the directory I created in
+step 1. The z flag compresses it using the gzip program in Unix, the c flag creates the archive in Linux, the v
+flag displays progress, and the f flag to archive file name.

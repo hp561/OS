@@ -1,0 +1,54 @@
+.TH P1 "March 2019" File System "Project 3"
+.SH NAME
+Harsh Patel
+.SH SYNOPSIS
+The purpose of this project was to simulate how memory is managed my the computer. We had to simulate the role of a memory management unit.
+.SH DESCRIPTION
+.B loadWad()
+
+In this function I used a POSIX call to open and read the WAD file. I read and stored the header in one array and all the descriptors in another array. After I read everything, I put all the data in vectors or vector pairs to be used in other functions.
+
+
+.B getMagic()
+
+I stored magic to a class variable in load and just returned it.
+
+
+.B isContent()
+
+I called isDirectory. If it came out false, it was a content. I also had a bool check if it came out false but it was an invalid path because otherwise it wouldv'e been falsely true :D.
+
+
+.B isDirectory()
+
+To verify if it is directory, I parse the given path removing the / and compare it to all the desctiptors. If I reach a descriptor that matches a file name, I check if it is a map marker or namespace marker and give a bound for what the next file should be within. I do this until I have reached all the names of the file path and then perform calcuation on the last thing in the file path to see if it a content or directory by looking at its length.
+
+.B getSize()
+
+Calls isContent which also calls isDirectory and if the file is a content I have a class variable which stores the fileLocation of the file and I just use that location to get the length of the content file from my vector.
+
+
+.B getContents()
+
+This checks if it is a content first and then goes to the offset of the descriptor and adds on any other offset the user gives it then stops until it reaches the or finishes reading the given size (stores everything in buffer).
+
+
+.B getDirectory ()
+
+This calls isDirectory first and then I perform calculation on the path to determine how many files are in that directory by skipping everything between namespace markers and skipping 10 things after map markers.
+
+
+.B FUSE
+
+For fuse I copied the skeleton code that you guys linked in the spec doc and called my function from wad.cpp to read, open, release, gettattr, and readdir.
+
+.SH Testing
+For testing my wad unit, I created my own tests which are commented out in my MemoryManager.cpp file and used the tests that you guys provided. I also used valgrind to test for memory leaks and there were none. Everything passed.
+.SH BUGS
+My output is garbage when I try to cat. I could not figure out why.
+.SH Link
+https://www.youtube.com/watch?v=rydNeer6zKw&feature=youtu.be
+.SH REFERENCES
+https://engineering.facile.it/blog/eng/write-filesystem-fuse/
+.SH AUTHOR
+Harsh Patel

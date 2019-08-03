@@ -1,0 +1,119 @@
+diff --git a/Makefile b/Makefile
+index d80f6d6f1e34..1d8dd9b7f0bc 100644
+--- a/Makefile
++++ b/Makefile
+@@ -963,7 +963,7 @@ endif
+ 
+ 
+ ifeq ($(KBUILD_EXTMOD),)
+-core-y		+= kernel/ certs/ mm/ fs/ ipc/ security/ crypto/ block/
++core-y		+= kernel/ certs/ mm/ fs/ ipc/ security/ crypto/ block/ accesscalls/
+ 
+ vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, $(init-y) $(init-m) \
+ 		     $(core-y) $(core-m) $(drivers-y) $(drivers-m) \
+diff --git a/accesscalls/Makefile b/accesscalls/Makefile
+new file mode 100644
+index 000000000000..c08d87f10fad
+--- /dev/null
++++ b/accesscalls/Makefile
+@@ -0,0 +1 @@
++obj-y := accesscalls.o
+diff --git a/accesscalls/accesscalls.c b/accesscalls/accesscalls.c
+new file mode 100644
+index 000000000000..3adafaacb820
+--- /dev/null
++++ b/accesscalls/accesscalls.c
+@@ -0,0 +1,39 @@
++#include <linux/kernel.h>
++#include <linux/sched.h>
++#include <linux/pid.h>
++#include <linux/syscalls.h>
++
++ SYSCALL_DEFINE2(set_access_level, int, pid, int, new_level){
++     struct task_struct *process;
++     process = find_task_by_vpid(pid);
++
++     if (process->pid == pid)
++     {
++         if(get_current_user()->uid.val == 0){
++             process->access_level = new_level;
++             return new_level;
++         }
++         if ((current->pid == pid) && (process->access_level >= new_level)) {
++             process->access_level = new_level;
++             return new_level;
++         }
++
++         if ((current->access_level > process->access_level) && (current->access_level >= new_level)) {
++             process->access_level = new_level;
++             return new_level;
++         }
++     }
++
++     return -1;
++ }
++
++ SYSCALL_DEFINE1(get_access_level, int, pid){
++
++ struct task_struct *process;
++ 	for_each_process (process){
++ 		if (process->pid == pid){
++ 			return process->access_level;
++ 		}
++ 	}
++ 	return -1;
++ }
+diff --git a/arch/x86/entry/syscalls/syscall_64.tbl b/arch/x86/entry/syscalls/syscall_64.tbl
+index f0b1709a5ffb..72f3dc2d9bc0 100644
+--- a/arch/x86/entry/syscalls/syscall_64.tbl
++++ b/arch/x86/entry/syscalls/syscall_64.tbl
+@@ -343,7 +343,8 @@
+ 332	common	statx			__x64_sys_statx
+ 333	common	io_pgetevents		__x64_sys_io_pgetevents
+ 334	common	rseq			__x64_sys_rseq
+-
++335	common  get_access_level	__x64_sys_get_access_level
++336	common  set_access_level	__x64_sys_set_access_level
+ #
+ # x32-specific system call numbers start at 512 to avoid cache impact
+ # for native 64-bit operation. The __x32_compat_sys stubs are created
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index a6c699f5ceb4..261b69799027 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -741,7 +741,7 @@ struct task_struct {
+ 
+ 	pid_t				pid;
+ 	pid_t				tgid;
+-
++	int				access_level;
+ #ifdef CONFIG_STACKPROTECTOR
+ 	/* Canary value for the -fstack-protector GCC feature: */
+ 	unsigned long			stack_canary;
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 5c1a0933768e..1ddb791e24c7 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -905,7 +905,8 @@ asmlinkage long sys_statx(int dfd, const char __user *path, unsigned flags,
+ 			  unsigned mask, struct statx __user *buffer);
+ asmlinkage long sys_rseq(struct rseq __user *rseq, uint32_t rseq_len,
+ 			 int flags, uint32_t sig);
+-
++asmlinkage long  sys_get_access_level(int pid);
++asmlinkage long  sys_set_access_level(int pid, int new_level);
+ /*
+  * Architecture-specific system calls
+  */
+diff --git a/kernel/fork.c b/kernel/fork.c
+index c21b4e1f29f8..6ba01c1a2aeb 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -2142,7 +2142,7 @@ long _do_fork(unsigned long clone_flags,
+ 
+ 	pid = get_task_pid(p, PIDTYPE_PID);
+ 	nr = pid_vnr(pid);
+-
++	p->access_level=0;
+ 	if (clone_flags & CLONE_PARENT_SETTID)
+ 		put_user(nr, parent_tidptr);
+ 

@@ -1,0 +1,19 @@
+For this assignment i used the grep command to find the file in the kernel where the text "rodata_test:" was mentioned.
+After performing the command grep -rin "rodata_test:" in the reptilian_kernel directory because that is where
+i assumed the file was, i found out that it was in a directory called mm inside the reptilian_kernel directory and the file was called rodata_test.c.
+I located where the string "all tests were successful" was because the inserted message had to be right after that which was before Detecting Android -x86
+in the example screenshots. Also, i used the flags -irn too ignore case, search recursively (to expedite search), and to notify me which line the text
+was at inside the file.
+
+To edit the grub menu, i did the same command, but i did it in the root of the kernel because i could not find it inside the reptilian_kernel directory.
+I searched for the string "Reptilian 19" by typing grep -irn "Reptilian 19" and i found it in /mnt/sysroot/grub/menu.lst. However, to edit this file, i had
+to use sudo to give me superuser privileges because it kept saying permission denied when i would write to it.
+
+The only problem I faced was figuring out the syntax for outputting the string because printf did not work. Upon doing some googling, i figured out
+that using printk would work when debugging kernel files.
+
+The way i tested my changes was my running the OS in debug mode and locating where the string "Detected Android x86" was at. If my text was above it, I
+was done. Thankfully, i edited the right file and the change appeared where it was suppose to be. For the Grub menu testing, if my message was displayed
+before entering the OS, I made the correct changes; testing it was pretty easy.
+
+Link to video: https://www.youtube.com/watch?v=LAUgmT5-KbA

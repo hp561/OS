@@ -1,0 +1,12 @@
+diff --git a/mm/rodata_test.c b/mm/rodata_test.c
+index d908c8769b48..c0c886be2d7b 100644
+--- a/mm/rodata_test.c
++++ b/mm/rodata_test.c
+@@ -54,4 +54,7 @@ void rodata_test(void)
+ 	}
+
+ 	pr_info("all tests were successful\n");
++
++        printk("\n##### Harsh Patel (UFID: 8011-0499) This was hard! #####\n");
++
+ }
